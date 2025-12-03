@@ -11,6 +11,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -95,6 +96,11 @@ public class ProviderClient {
             log.warn("Provider call failed, falling back to mock: {}", ex.getMessage());
             return mockChat(provider, prompt, context);
         }
+    }
+
+    public List<String> streamChat(ProviderType provider, String prompt, String context) {
+        String answer = chat(provider, prompt, context);
+        return Arrays.asList(answer.split("(?<=\\G.{12})"));
     }
 
     public String generateImage(ProviderType provider, String prompt) {

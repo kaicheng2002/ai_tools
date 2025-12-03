@@ -1,10 +1,10 @@
 -- Schema for AI Q&A system (MySQL 8+)
--- Run before starting the application when `spring.jpa.hibernate.ddl-auto` is not set to `update`.
 
 CREATE TABLE IF NOT EXISTS conversation (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS message (
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS message (
     attachments LONGTEXT,
     provider ENUM('GPT', 'GROK', 'DEEPSEEK'),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_message_conversation FOREIGN KEY (conversation_id)
         REFERENCES conversation(id)
         ON DELETE CASCADE

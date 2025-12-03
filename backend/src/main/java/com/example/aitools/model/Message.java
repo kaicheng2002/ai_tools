@@ -1,74 +1,33 @@
 package com.example.aitools.model;
 
-import jakarta.persistence.*;
-import java.time.Instant;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
-@Entity
+import java.time.LocalDateTime;
+
+@Data
+@TableName("message")
 public class Message {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Conversation conversation;
+    private Long conversationId;
 
     private String role;
 
-    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(columnDefinition = "TEXT")
     private String attachments;
 
     private ProviderType provider;
 
-    private Instant createdAt = Instant.now();
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createdAt;
 
-    public Long getId() {
-        return id;
-    }
-
-    public Conversation getConversation() {
-        return conversation;
-    }
-
-    public void setConversation(Conversation conversation) {
-        this.conversation = conversation;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(String attachments) {
-        this.attachments = attachments;
-    }
-
-    public ProviderType getProvider() {
-        return provider;
-    }
-
-    public void setProvider(ProviderType provider) {
-        this.provider = provider;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedAt;
 }

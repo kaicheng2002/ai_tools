@@ -1,11 +1,11 @@
 # AI 问答系统（Vue 3 + Spring Boot）
 
-一套前后端分离的 AI 问答/图片生成模板，支持 GPT、Grok、DeepSeek 模型，提供对话记忆、文件上传、图片生成能力，默认使用 MySQL 持久化对话记录。
+一套前后端分离的 AI 问答/图片生成模板，支持 GPT、Grok、DeepSeek 模型，提供对话记忆、文件上传、图片生成能力，默认使用 MySQL + MyBatis-Plus 持久化对话记录，并通过 SSE 将 AI 回复流式推送到前端。
 
 ## 目录结构
 
-- `backend/`：Spring Boot 服务，提供聊天、图片生成、文件上传接口，持久化对话记忆。
-- `frontend/`：Vue 3 + Vite 前端，内置简洁操作界面。
+- `backend/`：Spring Boot 服务，提供聊天、图片生成、文件上传接口，MyBatis-Plus 管理持久化。
+- `frontend/`：Vue 3 + Vite 前端，科技感界面，左侧会话列表、右侧聊天窗口，支持 SSE 实时展示 AI 回复。
 
 ## 本地运行
 
@@ -36,8 +36,11 @@ cd backend
 
 ## 主要接口
 
-- `POST /api/chat`：发起对话，`provider` 选择模型，支持传入 `conversationId` 继续上下文；`fileUrls` 可把上传结果写入提示（后端记忆区会保存附件链接）。
-- `GET /api/chat/{id}`：获取指定对话及记忆。
+- `GET /api/chat/conversations`：获取会话列表（按更新时间降序）。
+- `GET /api/chat/{id}`：获取指定对话及消息。
+- `GET /api/chat/stream`：SSE 流式对话，查询参数包含 `provider`、`prompt`、可选 `conversationId` 与多值 `fileUrls`。
+- `POST /api/images`：生成图片。
+- `POST /api/files`：上传文件并返回直链。
 
 ## 数据库建表 SQL
 
@@ -45,6 +48,6 @@ cd backend
 
 ## 重要说明
 
-- `ProviderClient` 提供 mock（本地字符串）与直连模式，可按供应商接口要求修改 `chatPayload` / `imagePayload` 构造。
+- 后端改为 MyBatis-Plus（不再使用 JPA），自带字段自动填充 `createdAt` / `updatedAt`。
+- `ProviderClient` 提供 mock 与直连模式，流式返回通过将回复拆分为小片段并按 SSE 推送，便于无缝替换成供应商的真流式接口。
 - 默认返回的图片地址为 mock 字符串，用于演示接口流程；接入真实模型后返回供应商提供的 URL 或 base64 内容即可。
-- 项目默认开启 JPA `ddl-auto: update` 以快速启动开发环境，生产环境请根据需要改为受控迁移。
