@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_tools?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: change-me
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+app:
+  upload-dir: uploads
+providers:
+  gpt:
+    api-key: YOUR_GPT_KEY
+    base-url: https://api.openai.com/v1
+  grok:
+    api-key: YOUR_GROK_KEY
+    base-url: https://api.x.ai/v1
+  deepseek:
+    api-key: YOUR_DEEPSEEK_KEY
+    base-url: https://api.deepseek.com/v1
