@@ -24,7 +24,7 @@ public class StorageService {
         String filename = UUID.randomUUID() + "-" + StringUtils.cleanPath(file.getOriginalFilename());
         Path target = storagePath.resolve(filename);
         Files.copy(file.getInputStream(), target);
-        return "/files/" + filename;
+        return "/api/files/" + filename;
     }
 
     public Path load(String filename) {

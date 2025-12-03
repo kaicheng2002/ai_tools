@@ -30,18 +30,19 @@ cd backend
    - `spring.datasource.url`：指向你的 MySQL 实例。
    - `spring.datasource.username` / `spring.datasource.password`：改为你的账号密码。
 2. **模型 API Key / Base URL**：同一文件中的 `providers.*`，填写 GPT / Grok / DeepSeek 的密钥和网关地址。
-3. **上传目录（可选）**：`app.upload-dir`，默认 `uploads`。
-4. **前端代理（可选）**：`frontend/vite.config.js` 中 `/api` 代理，若后端端口或域名变化请同步调整。
+3. **模型是否直连/Mock**：`providers.*.mock`（默认 `true`，本地直接返回模拟结果；设置为 `false` 且填好 `api-key` 后会调用真实接口），模型名称/路径可通过 `model`、`chat-path`、`image-path` 调整。
+4. **上传目录（可选）**：`app.upload-dir`，默认 `uploads`。
+5. **前端代理（可选）**：`frontend/vite.config.js` 中 `/api` 代理，若后端端口或域名变化请同步调整。
 
 ## 主要接口
 
-- `POST /api/chat`：发起对话，`provider` 选择模型，支持传入 `conversationId` 继续上下文。
+- `POST /api/chat`：发起对话，`provider` 选择模型，支持传入 `conversationId` 继续上下文；`fileUrls` 可把上传结果写入提示（后端记忆区会保存附件链接）。
 - `GET /api/chat/{id}`：获取指定对话及记忆。
-- `POST /api/files`：上传文件，返回可复用的文件 URL。
-- `POST /api/images`：根据提示词生成图片（示例中为占位调用，按需替换为真实模型接口）。
+- `POST /api/files`：上传文件，返回可复用的文件 URL（形如 `/api/files/{filename}`）。
+- `POST /api/images`：根据提示词生成图片（默认返回 mock 地址，关闭 mock 后按真实供应商返回结果）。
 
 ## 重要说明
 
-- 后端的外部模型调用使用 `ProviderClient` 统一封装，请将 `/mock-endpoint` 替换为真实供应商的聊天/绘图接口路径，并调整请求体结构。
-- 当前返回的图片地址为占位字符串，用于演示接口流程；接入真实模型后返回供应商提供的 URL 或 base64 内容即可。
+- `ProviderClient` 提供 mock（本地字符串）与直连模式，可按供应商接口要求修改 `chatPayload` / `imagePayload` 构造。
+- 默认返回的图片地址为 mock 字符串，用于演示接口流程；接入真实模型后返回供应商提供的 URL 或 base64 内容即可。
 - 项目默认开启 JPA `ddl-auto: update` 以快速启动开发环境，生产环境请根据需要改为受控迁移。

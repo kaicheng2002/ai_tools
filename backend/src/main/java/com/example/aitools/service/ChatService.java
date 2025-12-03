@@ -8,6 +8,8 @@ import com.example.aitools.repository.ConversationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.stream.Collectors;
+
 @Service
 public class ChatService {
     private final ConversationRepository conversationRepository;
@@ -27,14 +29,22 @@ public class ChatService {
         Message userMessage = new Message();
         userMessage.setRole("user");
         userMessage.setContent(request.getPrompt());
+        if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+            userMessage.setAttachments(String.join("\n", request.getFileUrls()));
+        }
         conversation.addMessage(userMessage);
 
         String history = conversation.getMessages().stream()
-                .map(Message::getContent)
-                .reduce((a, b) -> a + "\n" + b)
-                .orElse("");
+                .map(msg -> msg.getRole() + ": " + msg.getContent() +
+                        (msg.getAttachments() != null ? "\n附件:\n" + msg.getAttachments() : ""))
+                .collect(Collectors.joining("\n\n"));
 
-        String answer = providerClient.chat(request.getProvider(), request.getPrompt(), history);
+        String promptWithFiles = request.getPrompt();
+        if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+            promptWithFiles += "\n\n附件地址:\n" + String.join("\n", request.getFileUrls());
+        }
+
+        String answer = providerClient.chat(request.getProvider(), promptWithFiles, history);
 
         Message aiMessage = new Message();
         aiMessage.setRole("assistant");

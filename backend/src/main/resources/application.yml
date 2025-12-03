@@ -16,9 +16,21 @@ providers:
   gpt:
     api-key: YOUR_GPT_KEY
     base-url: https://api.openai.com/v1
+    model: gpt-4o-mini
+    chat-path: /chat/completions
+    image-path: /images/generations
+    mock: true
   grok:
     api-key: YOUR_GROK_KEY
     base-url: https://api.x.ai/v1
+    model: grok-beta
+    chat-path: /chat/completions
+    image-path: /images/generations
+    mock: true
   deepseek:
     api-key: YOUR_DEEPSEEK_KEY
     base-url: https://api.deepseek.com/v1
+    model: deepseek-chat
+    chat-path: /chat/completions
+    image-path: /images/generations
+    mock: true

@@ -17,6 +17,9 @@ public class Message {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
+    private String attachments;
+
     private ProviderType provider;
 
     private Instant createdAt = Instant.now();
@@ -47,6 +50,14 @@ public class Message {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
     }
 
     public ProviderType getProvider() {

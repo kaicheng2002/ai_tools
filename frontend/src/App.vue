@@ -18,17 +18,25 @@
         </div>
         <div class="form-row">
           <label>问题</label>
-          <textarea v-model="prompt" rows="3" placeholder="输入你的问题..." />
+          <textarea v-model="prompt" rows="3" placeholder="输入你的问题..."></textarea>
         </div>
         <div class="actions">
           <button @click="send" :disabled="loading">{{ loading ? '处理中...' : '发送' }}</button>
         </div>
         <div class="history" v-if="conversation">
-          <h3>对话记忆</h3>
+          <h3>对话记忆 {{ conversation.title ? '· ' + conversation.title : '' }}</h3>
           <div v-for="msg in conversation.messages" :key="msg.id" class="bubble" :class="msg.role">
             <strong>{{ msg.role === 'user' ? '你' : 'AI' }}：</strong>
             <p>{{ msg.content }}</p>
             <small v-if="msg.provider">模型：{{ msg.provider }}</small>
+            <div v-if="msg.attachments" class="attachments">
+              <span>附件：</span>
+              <ul>
+                <li v-for="link in msg.attachments.split('\n')" :key="link">
+                  <a :href="link" target="_blank" rel="noreferrer">{{ link }}</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -233,6 +241,22 @@ button:hover:not(:disabled) {
 
 .bubble small {
   color: #6b7280;
+}
+
+.attachments {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.attachments ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+
+.attachments a {
+  color: #2563eb;
+  word-break: break-all;
 }
 
 .image-preview {
