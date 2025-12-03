@@ -59,27 +59,46 @@
           </div>
         </div>
 
-        <div class="history" v-if="conversation">
+        <div class="history">
           <div class="history-head">
             <div>
               <p class="eyebrow">对话记忆</p>
-              <h3>{{ conversation.title || '未命名会话' }}</h3>
+              <h3>{{ conversation?.title || '开启一轮新对话' }}</h3>
             </div>
-            <span class="badge">{{ conversation.messages.length }} 条</span>
+            <span class="badge">{{ conversation?.messages?.length || 0 }} 条</span>
           </div>
-          <div class="timeline">
-            <div v-for="msg in conversation.messages" :key="msg.id" class="bubble" :class="msg.role">
-              <div class="meta">
-                <span class="role">{{ msg.role === 'user' ? '你' : 'AI' }}</span>
-                <span class="model" v-if="msg.provider">{{ msg.provider }}</span>
-              </div>
-              <p class="content">{{ msg.content }}</p>
-              <div v-if="msg.attachments" class="attachments">
-                <span>附件：</span>
-                <div class="links">
-                  <a v-for="link in msg.attachments.split('\n')" :key="link" :href="link" target="_blank" rel="noreferrer">{{ link }}</a>
+          <div class="chat-window" ref="chatView">
+            <div v-if="conversation?.messages?.length" class="timeline">
+              <div
+                v-for="msg in conversation.messages"
+                :key="msg.id"
+                class="bubble"
+                :class="msg.role"
+              >
+                <div class="meta">
+                  <span class="role">{{ msg.role === 'user' ? '我' : 'AI' }}</span>
+                  <span class="model" v-if="msg.provider">{{ msg.provider }}</span>
+                </div>
+                <p class="content">{{ msg.content }}</p>
+                <div v-if="msg.attachments" class="attachments">
+                  <span>附件：</span>
+                  <div class="links">
+                    <a
+                      v-for="link in msg.attachments.split('\n')"
+                      :key="link"
+                      :href="link"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {{ link }}
+                    </a>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div v-else class="empty-chat">
+              <p class="title">还没有内容</p>
+              <p class="note">发送问题后，左侧显示 AI 回复，右侧显示你的提问，完整聊天记录实时呈现。</p>
             </div>
           </div>
         </div>
@@ -137,13 +156,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import axios from 'axios'
 
 const provider = ref('GPT')
 const prompt = ref('')
 const conversation = ref(null)
 const loading = ref(false)
+const chatView = ref(null)
 
 const fileUrl = ref('')
 const imagePrompt = ref('')
@@ -163,6 +183,8 @@ const send = async () => {
     })
     conversation.value = data
     prompt.value = ''
+    await nextTick()
+    scrollChat()
   } finally {
     loading.value = false
   }
@@ -190,6 +212,12 @@ const generateImage = async () => {
     imageUrl.value = data
   } finally {
     imageLoading.value = false
+  }
+}
+
+const scrollChat = () => {
+  if (chatView.value) {
+    chatView.value.scrollTop = chatView.value.scrollHeight
   }
 }
 </script>
@@ -474,6 +502,15 @@ button:hover:not(:disabled) {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.chat-window {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .timeline {
   display: flex;
   flex-direction: column;
@@ -487,6 +524,7 @@ button:hover:not(:disabled) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  max-width: 78%;
 }
 
 .bubble::before {
@@ -504,6 +542,17 @@ button:hover:not(:disabled) {
 .bubble.assistant {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.25), rgba(59, 130, 246, 0.15));
   border-color: rgba(96, 165, 250, 0.5);
+}
+
+.bubble.assistant {
+  margin-right: auto;
+}
+
+.bubble.user {
+  margin-left: auto;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(5, 150, 105, 0.3));
+  border-color: rgba(45, 212, 191, 0.6);
+  text-align: right;
 }
 
 .meta {
@@ -547,6 +596,15 @@ button:hover:not(:disabled) {
 .links a {
   color: #7dd3fc;
   word-break: break-all;
+}
+
+.empty-chat {
+  text-align: center;
+  padding: 30px 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #cbd5e1;
 }
 
 .side-panel .block {
