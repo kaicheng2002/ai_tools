@@ -38,8 +38,10 @@ cd backend
 
 - `POST /api/chat`：发起对话，`provider` 选择模型，支持传入 `conversationId` 继续上下文；`fileUrls` 可把上传结果写入提示（后端记忆区会保存附件链接）。
 - `GET /api/chat/{id}`：获取指定对话及记忆。
-- `POST /api/files`：上传文件，返回可复用的文件 URL（形如 `/api/files/{filename}`）。
-- `POST /api/images`：根据提示词生成图片（默认返回 mock 地址，关闭 mock 后按真实供应商返回结果）。
+
+## 数据库建表 SQL
+
+- 如需手动初始化数据表，执行 `backend/sql/schema.sql`（适配 MySQL 8+），包含 `conversation` 与 `message` 两张表及外键/索引。
 
 ## 重要说明
 
