@@ -14,12 +14,15 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ProviderClient {
     private static final Logger log = LoggerFactory.getLogger(ProviderClient.class);
 
     private final RestClient restClient;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Value("${providers.gpt.base-url:https://api.openai.com/v1}")
     private String gptBaseUrl;
@@ -85,13 +88,14 @@ public class ProviderClient {
             return mockChat(provider, prompt, context);
         }
         try {
-            return restClient.post()
+            String raw = restClient.post()
                     .uri(settings.baseUrl() + settings.chatPath())
                     .headers(headers -> headers.addAll(defaultHeaders(settings.apiKey())))
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(chatPayload(settings.model(), prompt, context))
                     .retrieve()
                     .body(String.class);
+            return normalizeAnswer(raw);
         } catch (Exception ex) {
             log.warn("Provider call failed, falling back to mock: {}", ex.getMessage());
             return mockChat(provider, prompt, context);
@@ -174,6 +178,33 @@ public class ProviderClient {
             return text;
         }
         return text.substring(0, max) + "...";
+    }
+
+    private String normalizeAnswer(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "";
+        }
+        try {
+            JsonNode root = mapper.readTree(raw);
+            JsonNode choices = root.path("choices");
+            if (choices.isArray() && !choices.isEmpty()) {
+                JsonNode first = choices.get(0);
+                JsonNode message = first.path("message");
+                if (message.has("content")) {
+                    return message.get("content").asText();
+                }
+                JsonNode delta = first.path("delta");
+                if (delta.has("content")) {
+                    return delta.get("content").asText();
+                }
+                if (first.has("text")) {
+                    return first.get("text").asText();
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Failed to parse provider response, return raw: {}", e.getMessage());
+        }
+        return raw;
     }
 
     private record ProviderSettings(String baseUrl, String apiKey, String model, String chatPath, String imagePath,
